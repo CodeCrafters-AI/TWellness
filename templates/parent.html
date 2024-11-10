@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeenWellness Dashboard</title>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* Custom Styles */
+    main{
+        margin-right: 120px;
+    }
+    body {
+        background-color: #f8f9fa;
+    }
+    .row{
+
+        padding: 10px;
+    }
+    .sidebar {
+        width: 12%;
+        height: 100vh;
+        background-color: #343a40;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 30px;
+        padding-top: 20px;
+    }
+    .nav-link {
+        color: #adb5bd;
+        padding: 15px;
+        text-align: center;
+        width: 100%;
+    }
+    .nav-link.active {
+        color: #fff;
+        padding:10px;
+        background-color: #495057;
+        border-radius: 10px;
+    }
+    .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-bottom: 20px;
+        border: 2px solid #fff;
+    }
+    .logout {
+        margin-top: auto;
+        margin-bottom: 20px;
+    }
+    .header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+    .card {
+        border-radius: 20px;
+    }
+    /* Updated Sidebar Styles */
+.sidebar {
+    width: 70px; /* Reduced width */
+    height: 98vh;
+    background-color: #343a40;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+    padding-top: 30px;
+}
+main {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+    padding: 20px;
+}
+.nav-link {
+    color: #adb5bd;
+    padding: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-link.active {
+    color: #fff;
+    background-color: #495057;
+    border-radius: 10px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    border: 2px solid #fff;
+}
+
+/* Centering Icons Vertically */
+.nav {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px; /* Space between icons */
+}
+
+.logout {
+    margin-top: auto;
+    margin-bottom: 20px;
+}
+/* Blur Effect for Background */
+.blur-background {
+    filter: blur(5px);
+    pointer-events: none; /* Prevent interaction with the background elements */
+    transition: filter 0.9s ease-in-out;
+}
+.modal-content {
+    filter: none !important; 
+    pointer-events: auto; /* Ensure modal content is interactive */
+}
+
+</style>
+</head>
+<body>
+
+<!-- Verification Modal -->
+<div class="modal" id="verificationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Verify Access</h5>
+        </div>
+        <div class="modal-body">
+          <p>A verification code has been sent to your child’s email. Please enter it below to access the dashboard.</p>
+          <input type="text" id="verificationCode" class="form-control" placeholder="Enter code here">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="verifyCode()">Verify</button>
+        </div>
+      </div>
+    </div>
+  </div>
+        
+
+
+
+<div class="container-fluid">
+    <div class="row">
+<!-- Sidebar Navigation -->
+<!-- Sidebar Navigation -->
+<nav class="col-md-2 col-lg-1 sidebar d-flex flex-column align-items-center">
+    <img src="https://via.placeholder.com/80" alt="User Avatar" class="avatar">
+    <ul class="nav flex-column text-center w-100">
+        </li>
+    <a class="nav-link logout" href="index.html">
+        <i class="fas fa-sign-out-alt"></i>
+    </a>
+</nav>
+
+    <!-- Main Content -->
+        <main class="col-md-10 ms-sm-auto px-md-4">
+            <!-- Header -->
+            <div class="header d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3">Hi, Miley's Parent!</h1>
+                    <p class="text-muted">Dashboard</p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary me-2">May 03 - May 18</button>
+                    <button class="btn btn-outline-secondary">24h</button>
+                </div>
+            </div>
+            
+
+            <!-- Dashboard Sections -->
+            <div class="row my-4">
+                <!-- Mood Board -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Mood Board</h5>
+                            <div class="chart-container">
+                                <canvas id="moodChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Tracker -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Health Tracker</h5>
+                            <div class="row">
+                                <div class="col-4 text-center">
+                                    <p class="text-muted">Heart Rate</p>
+                                    <p class="h4">130 bpm</p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <p class="text-muted">Total Steps</p>
+                                    <p class="h4">5500</p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <p class="text-muted">Kcal Burn</p>
+                                    <p class="h4">503 kcal</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Habit Tracker -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Habit Tracker</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item">Morning Run - 7:00 AM - Park</li>
+                                <li class="list-group-item">1.5L of Water Daily</li>
+                                <li class="list-group-item">Cooking Meal Preps - 11:00 AM - Home</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Progress -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Daily Progress</h5>
+                            <p class="h1">85%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Chart.js Script for Rounded Bar Chart -->
+<script>
+    const ctx = document.getElementById('moodChart').getContext('2d');
+    
+    const moodChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+            datasets: [{
+                label: 'Mood Levels',
+                data: [1500, 2000, 1700, 2200, 1900, 2400, 1800],
+                backgroundColor: '#4caf50',
+                borderRadius: 10,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { display: false } }
+            }
+        }
+    });
+
+    
+     // Show modal on page load
+// Show modal on page load
+document.addEventListener('DOMContentLoaded', function () {
+    const verificationModal = new bootstrap.Modal(document.getElementById('verificationModal'));
+    const body = document.body; // Get the body element
+    const container = document.querySelector('.container-fluid'); // Select the container you want to blur
+    
+    container.classList.add('blur-background');  // Apply blur effect to the background
+
+    verificationModal.show();  // Show the modal
+    // Event listener for hiding the modal
+    document.getElementById('verificationModal').addEventListener('hidden.bs.modal', function () {
+        container.classList.remove('blur-background');  // Remove the blur effect when the modal is closed
+    });
+});
+
+function verifyCode() {
+    const code = document.getElementById('verificationCode').value;
+    // Replace with actual code verification logic
+    if (code === "XQZ1") {  // Replace 'EXPECTED_CODE' with dynamic verification logic
+        document.getElementById('verificationModal').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = "block";
+        document.querySelector('.container-fluid').classList.remove('blur-background');  // Remove the blur effect after successful verification
+    } else {
+        alert('Incorrect code. Please try again.');
+    }
+}
+
+
+
+
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

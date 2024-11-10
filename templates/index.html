@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeenWellness - Mental Health Consultancy</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white font-sans">
+
+<!-- Navbar -->
+<header class="flex justify-between items-center p-5">
+    <h1 class="text-3xl font-bold text-blue-600">Teen<span class="text-cyan-500">Wellness</span></h1>
+    <button id="loginButton" class="bg-teal-600 text-white py-2 px-6 rounded-lg hover:bg-teal-700">LOGIN</button>
+</header>
+
+<!-- Hero Section -->
+<section class="flex flex-col lg:flex-row items-center lg:justify-between px-10 py-24 lg:py-32">
+    <div class="max-w-2xl">
+        <h2 class="text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
+            Healthy Minds, Happy Lives <span class="text-cyan-500">Mental Health Consultancy</span>
+        </h2>
+        <p class="text-lg lg:text-xl text-gray-600 mb-8">
+            Welcome to MindMates, your haven for mental wellness! Explore resources, find support, and connect with a community dedicated to well-being.
+        </p>
+        <button id="registerButton" class="bg-teal-600 text-white py-4 px-10 rounded-lg text-lg hover:bg-teal-700">Get Started</button>
+    </div>
+    <div class="mt-12 lg:mt-0">
+        <img src="/static/images/homepage.png" alt="Consultant" class="rounded-xl shadow-lg w-full lg:w-[500px]">
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="px-10 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <!-- Feature Card -->
+    <div class="feature-card bg-white p-6 rounded-xl shadow-lg text-center transform transition-transform hover:scale-105 hover:shadow-2xl">
+        <div class="text-4xl text-teal-500 mb-4">🎧</div>
+        <h3 class="text-2xl font-semibold mb-2">Free Consultation</h3>
+        <p class="text-gray-600">We offer flexible appointment scheduling and free to accommodate your busy life.</p>
+    </div>
+    <div class="feature-card bg-white p-6 rounded-xl shadow-lg text-center transform transition-transform hover:scale-105 hover:shadow-2xl">
+        <div class="text-4xl text-orange-500 mb-4">🩺</div>
+        <h3 class="text-2xl font-semibold mb-2">Expert Therapy</h3>
+        <p class="text-gray-600">Our team of experienced professionals boasts years of expertise in various areas of therapy.</p>
+    </div>
+    <div class="feature-card bg-white p-6 rounded-xl shadow-lg text-center transform transition-transform hover:scale-105 hover:shadow-2xl">
+        <div class="text-4xl text-green-500 mb-4">⭐</div>
+        <h3 class="text-2xl font-semibold mb-2">High User Rating</h3>
+        <p class="text-gray-600">We offer the latest techniques for ensuring your mental health is fully optimized.</p>
+    </div>
+    <div class="feature-card bg-white p-6 rounded-xl shadow-lg text-center transform transition-transform hover:scale-105 hover:shadow-2xl">
+        <div class="text-4xl text-blue-500 mb-4">🧠</div>
+        <h3 class="text-2xl font-semibold mb-2">Best Services</h3>
+        <p class="text-gray-600">Our compassionate team is dedicated to making your experience comfortable and stress-free.</p>
+    </div>
+</section>
+
+<!-- Login Popup -->
+<div id="loginPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-80">
+        <h2 class="text-2xl font-bold mb-4">Login</h2>
+        <input type="email" placeholder="Email" class="w-full p-2 mb-4 border rounded">
+        <input type="password" placeholder="Password" class="w-full p-2 mb-4 border rounded">
+        <button class="bg-teal-600 text-white py-2 px-4 rounded w-full hover:bg-teal-700">Submit</button>
+        <button id="closeLoginPopup" class="mt-4 text-teal-600">Close</button>
+    </div>
+</div>
+
+<!-- Register Popup -->
+<div id="registerPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-80">
+        <h2 class="text-2xl font-bold mb-4">Register</h2>
+        
+        <!-- User Type Selection -->
+        <label class="block mb-4">
+            <span class="text-gray-700">I am a:</span>
+            <select id="userType" class="w-full p-2 border rounded">
+                <option value="child">Child</option>
+                <option value="parent">Parent</option>
+            </select>
+        </label>
+        
+        <!-- Common Fields -->
+        <input type="text" placeholder="Full Name" class="w-full p-2 mb-4 border rounded">
+        <input type="email" placeholder="Email" class="w-full p-2 mb-4 border rounded">
+        <input type="password" placeholder="Password" class="w-full p-2 mb-4 border rounded">
+        
+        <!-- Child Email Field (Visible for Parent Only) -->
+        <div id="childEmailField" class="hidden">
+            <input type="email" placeholder="Child's Email" class="w-full p-2 mb-4 border rounded">
+        </div>
+        
+        <button class="bg-teal-600 text-white py-2 px-4 rounded w-full hover:bg-teal-700">Register</button>
+        <button id="closeRegisterPopup" class="mt-4 text-teal-600">Close</button>
+    </div>
+</div>
+
+
+<!-- JavaScript for Popup Functionality -->
+<script>
+    const loginButton = document.getElementById('loginButton');
+    const registerButton = document.getElementById('registerButton');
+    const loginPopup = document.getElementById('loginPopup');
+    const registerPopup = document.getElementById('registerPopup');
+    const closeLoginPopup = document.getElementById('closeLoginPopup');
+    const closeRegisterPopup = document.getElementById('closeRegisterPopup');
+
+    loginButton.addEventListener('click', () => {
+        loginPopup.classList.remove('hidden');
+    });
+
+    registerButton.addEventListener('click', () => {
+        registerPopup.classList.remove('hidden');
+    });
+
+    closeLoginPopup.addEventListener('click', () => {
+        loginPopup.classList.add('hidden');
+    });
+
+    closeRegisterPopup.addEventListener('click', () => {
+        registerPopup.classList.add('hidden');
+    });
+    
+    // Toggle Child Email Field Based on User Type
+    userType.addEventListener('change', () => {
+        if (userType.value === 'parent') {
+            childEmailField.classList.remove('hidden');
+        } else {
+            childEmailField.classList.add('hidden');
+        }
+    });
+</script>
+
+</body>
+</html>

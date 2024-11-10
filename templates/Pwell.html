@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeenWellness Dashboard</title>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* Custom Styles */
+    body, .container-fluid {
+    padding: 0;
+    margin: 0;
+    
+    background-color: #f8f9fa;
+        display: flex;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+    .sidebar {
+        width: 70px;
+        height: 98vh;
+        background-color: #343a40;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 20px;
+        padding-top: 30px;
+    }
+
+    .container-fluid {
+    padding: 0;
+    margin: 0;
+}
+    main {
+        margin-left: 70px;
+        width: calc(100% - 65px);
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+    }
+
+    .nav-link {
+        color: #adb5bd;
+        padding: 15px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .row{
+        padding: 10px;
+    }
+
+    .nav-link.active {
+        color: #fff;
+        background-color: #495057;
+        border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-bottom: 20px;
+        border: 2px solid #fff;
+    }
+
+    .logout {
+        margin-top: auto;
+        margin-bottom: 20px;
+    }
+    /* Centering Icons Vertically */
+.nav {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px; /* Space between icons */
+}
+
+    .left-section {
+        flex: 1;
+        position: relative;
+    }
+
+    .image {
+        width: 100%;
+        border-radius: 20px;
+    }
+
+    .btn-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 10px 20px;
+        border-radius: 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+    }
+
+    .right-section {
+        flex: 1;
+        width: 90vh;
+        height: 80vh;
+        background-color: #fff;
+        border-radius: 20px;
+        padding: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+    }
+
+    .chat-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .message {
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 100%;
+    }
+
+    .user-message {
+        background-color: #4caf50;
+        color: #fff;
+        align-self: flex-end;
+    }
+
+    .bot-message {
+        background-color: #495057;
+        color: #fff;
+        align-self: flex-start;
+    }
+
+    .chat-input {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .chat-input input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 20px;
+        border: 1px solid #dee2e6;
+    }
+
+    .chat-input button {
+        padding: 10px 20px;
+        border-radius: 20px;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+    }
+    
+    main {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    box-sizing: border-box; /* Ensures padding is included in the width */
+}
+
+</style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+<!-- Sidebar Navigation -->
+        <<nav class="col-md-2 col-lg-1 sidebar d-flex flex-column align-items-center">
+            <img src="https://via.placeholder.com/80" alt="User Avatar" class="avatar">
+            <ul class="nav flex-column text-center w-100">
+                <li class="nav-item">
+                    <a class="nav-link " href="home.html">
+                        <i class="fas fa-home"></i> <!-- Exercising Icon -->
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="pwell.html">
+                        <i class="fas fa-running"></i> <!-- Exercising Icon -->
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="dwell.html">
+                        <i class="fas fa-heartbeat"></i> <!-- Sexual Wellness Icon -->
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="mwell.html">
+                        <i class="fas fa-brain"></i> <!-- Mental Wellness Icon -->
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="swell.html">
+                        <i class="fas fa-calendar-alt"></i>
+                    </a>
+                </li>
+            </ul>
+            <a class="nav-link logout" href="index.html">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </nav>
+        
+
+<!-- Main Content -->
+        <main class="col-md-10 ms-sm-auto px-md-4">
+            <!-- Left Section (Image with Button) -->
+            <div class="left-section">
+                <img src="static/images/doctorbooking.png" alt="Wellness Image" class="image">
+                <button class="btn-overlay" data-bs-toggle="modal" data-bs-target="#bookingModal">Book Now</button>
+            </div>
+
+            <!-- Right Section (Chat Interface) -->
+            <div class="right-section">
+                <div class="chat-container" id="chatContainer"></div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type a message...">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalLabel">Book an Appointment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="mailto:your-email@example.com" method="post" enctype="text/plain">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Booking Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Chat Functionality -->
+<script>
+    const chatContainer = document.getElementById('chatContainer');
+    const chatInput = document.getElementById('chatInput');
+
+    function sendMessage() {
+        const userMessage = chatInput.value.trim();
+        if (userMessage === '') return;
+
+        // Create User Message
+        const userMessageDiv = document.createElement('div');
+        userMessageDiv.classList.add('message', 'user-message');
+        userMessageDiv.textContent = userMessage;
+        chatContainer.appendChild(userMessageDiv);
+
+        // Clear Input
+        chatInput.value = '';
+
+        // Auto-scroll
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Simulate Bot Response
+        setTimeout(() => {
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.classList.add('message', 'bot-message');
+            botMessageDiv.textContent = "I'm here to assist you!";
+            chatContainer.appendChild(botMessageDiv);
+
+            // Auto-scroll
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 1000);
+    }
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
