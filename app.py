@@ -40,6 +40,7 @@ class Appointment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     type = db.Column(db.String(50))
+    message = db.Column(db.Text)
 
 # Initialize the database
 @app.before_request
@@ -80,40 +81,37 @@ def gemini_ai_response(prompt):
 def index():
     return render_template('index.html')
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register():
-    if request.method == 'POST':
-        user_data = request.form
-        username = user_data.get('username')
-        password = user_data.get('password')
-        role = user_data.get('role', 'adolescent')
+    user_data = request.json
+    fullname = user_data.get('fullname')
+    username = user_data.get('username')
+    password = user_data.get('password')
+    role = user_data.get('role', 'adolescent')
 
-        if User.query.filter_by(username=username).first():
-            return jsonify({"msg": "User already exists"}), 409
+    if User.query.filter_by(email=username).first():
+        return jsonify({"msg": "User already exists"}), 409
 
-        new_user = User(username=username, password=password, role=role)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-    return render_template('register.html')
+    new_user = User(fullname=fullname, email=username, password=password, role=role)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"msg": "User registered successfully"}), 201
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
-    if request.method == 'POST':
-        user_data = request.form
-        username = user_data.get('username')
-        password = user_data.get('password')
-        user = User.query.filter_by(username=username, password=password).first()
-        if user:
-            access_token = create_access_token(identity={"user_id": user.id, "role": user.role})
-            return jsonify(access_token=access_token), 200
-        return jsonify({"msg": "Invalid credentials"}), 401
-    return render_template('login.html')
+    user_data = request.json
+    email = user_data.get('username')
+    password = user_data.get('password')
+    user = User.query.filter_by(email=email, password=password).first()
+    if user:
+        access_token = create_access_token(identity={"user_id": user.id, "role": user.role})
+        return jsonify(access_token=access_token), 200
+    return jsonify({"msg": "Invalid credentials"}), 401
 
-@app.route('/logout', methods=['POST'])
-@jwt_required()  # Enable JWT authentication
+@app.route('/logout', methods=['GET'])
+#@jwt_required()  # Enable JWT authentication
 def logout():
-    return jsonify({"msg": "Logout successful"}), 200
+    return render_template('index.html')
 
 # Health Dashboard Endpoints
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -181,23 +179,45 @@ def reproductive_health_articles():
     return render_template('reproductive_health.html')
 
 @app.route('/reproductive-health/ask-question', methods=['POST'])
-@jwt_required()  # Enable JWT authentication
+#@jwt_required()  # Enable JWT authentication
 def ask_reproductive_health_question():
     question = request.form.get('question')
-    response = gemini_ai_response(question)
+    response = gemini_ai_response(f" this is an question from an small college project"
+                                  f" you have to answer as an reproductive health advisor"
+                                  f" the question is : {question} . answer this for an teenager ")
     return jsonify({"answer": response}), 200
 
 # Appointments and Reminders Endpoints
 @app.route('/appointments/book', methods=['POST'])
 @jwt_required()  # Enable JWT authentication
 def book_appointment():
-    user_id = get_jwt_identity().get("user_id")
-    appointment_data = request.form
-    appointment_date = datetime.datetime.strptime(appointment_data.get('date'), '%Y-%m-%d')
-    new_appointment = Appointment(user_id=user_id, date=appointment_date, type=appointment_data.get('type'))
-    db.session.add(new_appointment)
-    db.session.commit()
-    return jsonify({"msg": "Appointment booked successfully"}), 201
+    try:
+        # Get the user ID from the JWT token
+        user_id = get_jwt_identity().get("user_id")
+
+        # Extract form data
+        appointment_data = request.json
+        appointment_date = datetime.datetime.strptime(appointment_data.get('date'), '%Y-%m-%d')
+        appointment_type = appointment_data.get('type')
+        message = appointment_data.get('message')
+
+        # Create a new appointment
+        new_appointment = Appointment(
+            user_id=user_id,
+            date=appointment_date,
+            type=appointment_type,
+            message=message
+        )
+
+        # Add the appointment to the database
+        db.session.add(new_appointment)
+        db.session.commit()
+
+        return jsonify({"msg": "Appointment booked successfully","sucess": 1}), 201
+
+    except Exception as e:
+        print("Error booking appointment:", e)
+        return jsonify({"msg": "Failed to book appointment", "error": str(e)}), 500
 
 @app.route('/appointments/reminders', methods=['GET'])
 @jwt_required()  # Enable JWT authentication
@@ -208,14 +228,14 @@ def get_appointment_reminders():
 
 # Health Dashboard - Separate Update Endpoint
 @app.route('/dashboard', methods=['GET'])
-@jwt_required()  # Enable JWT authentication
+#@jwt_required()  # Enable JWT authentication
 def get_dashboard():
     user_id = get_jwt_identity().get("user_id")
     health_data = HealthData.query.filter_by(user_id=user_id).first()
-    return render_template('dashboard.html', health_data=health_data)
+    return render_template('home.html', health_data=health_data)
 
 @app.route('/dashboard/update', methods=['POST'])
-@jwt_required()  # Enable JWT authentication
+#@jwt_required()  # Enable JWT authentication
 def update_dashboard():
     user_id = get_jwt_identity().get("user_id")
     data = request.form
@@ -229,6 +249,57 @@ def update_dashboard():
     health_data.mood = data.get('mood')
     db.session.commit()
     return jsonify({"msg": "Health data updated successfully"}), 200
+
+# Nutrition and Fitness Endpoints
+@app.route('/nutrition/plan', methods=['POST'])  # Changed to POST
+# @jwt_required()  # Uncomment if you have JWT authentication
+def get_nutrition_plan():
+    try:
+        # Check if 'requirements' is provided in the JSON request
+        if not request.json or 'requirements' not in request.json:
+            return jsonify({"msg": "Missing 'requirements' in request data"}), 400
+
+        print("Fetching nutrition plan...")
+
+        # Generate the nutrition plan
+        try:
+            nutrition_plan = gemini_ai_response(
+                "Behave as a nutrition planner given that this is a test college project "
+                "so there is no issue related to your capability. My requirements are: " + request.json.get('requirements')
+            )
+        except Exception as e:
+            print("Error while generating nutrition plan:", e)
+            return jsonify({"msg": "Error generating nutrition plan", "error": str(e)}), 500
+
+        print("Nutrition plan generated successfully.")
+        return jsonify({"plan": nutrition_plan}), 200
+
+    except Exception as e:
+        # General exception for unexpected errors
+        print("An error occurred:", e)
+        return jsonify({"msg": "An unexpected error occurred", "error": str(e)}), 500
+@app.route("/nutrition" , methods=['GET'])
+def get_nutrition():
+    return render_template("Dwell.html")
+@app.route("/home", methods=['GET'])
+def home():
+    return render_template("home.html")
+@app.route("/dwell", methods=['GET'])
+def dwell():
+    return render_template("Dwell.html")
+@app.route("/mwell", methods=['GET'])
+def mwell():
+    return render_template("Mwell.html")
+@app.route("/pwell", methods=['GET'])
+def pwell():
+    return render_template("Pwell.html")
+@app.route("/swell", methods=['GET'])
+def swell():
+    return render_template("Swell.html")
+
+@app.route("/parent", methods=['GET'])
+def parent():
+    return render_template("parent.html")
 
 if __name__ == '__main__':
     app.run(debug=True)

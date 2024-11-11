@@ -299,9 +299,10 @@ function verifyCode() {
     const code = document.getElementById('verificationCode').value;
     // Replace with actual code verification logic
     if (code === "XQZ1") {  // Replace 'EXPECTED_CODE' with dynamic verification logic
+
+        document.querySelector('.container-fluid').classList.remove('blur-background');  // Remove the blur effect after successful verification
         document.getElementById('verificationModal').style.display = 'none';
         document.getElementById('dashboardContent').style.display = "block";
-        document.querySelector('.container-fluid').classList.remove('blur-background');  // Remove the blur effect after successful verification
     } else {
         alert('Incorrect code. Please try again.');
     }

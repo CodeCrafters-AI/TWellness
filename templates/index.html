@@ -55,45 +55,41 @@
     </div>
 </section>
 
+
 <!-- Login Popup -->
 <div id="loginPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
     <div class="bg-white p-8 rounded-lg shadow-lg w-80">
         <h2 class="text-2xl font-bold mb-4">Login</h2>
-        <input type="email" placeholder="Email" class="w-full p-2 mb-4 border rounded">
-        <input type="password" placeholder="Password" class="w-full p-2 mb-4 border rounded">
-        <button class="bg-teal-600 text-white py-2 px-4 rounded w-full hover:bg-teal-700">Submit</button>
+        <input type="text" id="loginUsername" placeholder="Username" class="w-full p-2 mb-4 border rounded">
+        <input type="password" id="loginPassword" placeholder="Password" class="w-full p-2 mb-4 border rounded">
+        <button id="loginSubmit" class="bg-teal-600 text-white py-2 px-4 rounded w-full hover:bg-teal-700">Submit</button>
         <button id="closeLoginPopup" class="mt-4 text-teal-600">Close</button>
     </div>
 </div>
+
 
 <!-- Register Popup -->
 <div id="registerPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
     <div class="bg-white p-8 rounded-lg shadow-lg w-80">
         <h2 class="text-2xl font-bold mb-4">Register</h2>
-        
-        <!-- User Type Selection -->
-        <label class="block mb-4">
-            <span class="text-gray-700">I am a:</span>
-            <select id="userType" class="w-full p-2 border rounded">
-                <option value="child">Child</option>
-                <option value="parent">Parent</option>
-            </select>
-        </label>
-        
-        <!-- Common Fields -->
-        <input type="text" placeholder="Full Name" class="w-full p-2 mb-4 border rounded">
-        <input type="email" placeholder="Email" class="w-full p-2 mb-4 border rounded">
-        <input type="password" placeholder="Password" class="w-full p-2 mb-4 border rounded">
-        
-        <!-- Child Email Field (Visible for Parent Only) -->
-        <div id="childEmailField" class="hidden">
-            <input type="email" placeholder="Child's Email" class="w-full p-2 mb-4 border rounded">
-        </div>
-        
-        <button class="bg-teal-600 text-white py-2 px-4 rounded w-full hover:bg-teal-700">Register</button>
-        <button id="closeRegisterPopup" class="mt-4 text-teal-600">Close</button>
+        <form id="registerForm">
+            <!-- User Type Selection -->
+            <label class="block mb-4">
+                <span class="text-gray-700">I am a:</span>
+                <select id="registerRole" class="w-full p-2 border rounded">
+                    <option value="adolescent">Child</option>
+                    <option value="guardian">Parent</option>
+                </select>
+            </label>
+            <input type="text" id="registerFullname" placeholder="Full Name" class="w-full p-2 mb-4 border rounded" required>
+            <input type="text" id="registerUsername" placeholder="Username" class="w-full p-2 mb-4 border rounded" required>
+            <input type="password" id="registerPassword" placeholder="Password" class="w-full p-2 mb-4 border rounded" required>
+            <button id="registerSubmit" class="bg-teal-600 text-white py-2 px-4 rounded w-full hover:bg-teal-700">Register</button>
+            <button id="closeRegisterPopup" class="mt-4 text-teal-600">Close</button>
+        </form>
     </div>
 </div>
+
 
 
 <!-- JavaScript for Popup Functionality -->
@@ -121,14 +117,82 @@
         registerPopup.classList.add('hidden');
     });
     
-    // Toggle Child Email Field Based on User Type
-    userType.addEventListener('change', () => {
-        if (userType.value === 'parent') {
-            childEmailField.classList.remove('hidden');
+    const userType = document.getElementById('registerRole');
+const childEmailField = document.createElement('input'); // Creating childEmailField as a placeholder
+
+// Append the child email field to the form (initially hidden)
+childEmailField.setAttribute('type', 'email');
+childEmailField.setAttribute('id', 'childEmail');
+childEmailField.setAttribute('placeholder', 'Child Email');
+childEmailField.classList.add('w-full', 'p-2', 'mb-4', 'border', 'rounded', 'hidden');
+document.getElementById('registerForm').insertBefore(childEmailField, document.getElementById('registerFullname'));
+
+// Show/hide childEmailField based on userType selection
+userType.addEventListener('change', () => {
+    if (userType.value === 'guardian') {
+        childEmailField.classList.remove('hidden');
+    } else {
+        childEmailField.classList.add('hidden');
+    }
+});
+
+
+    document.getElementById('registerSubmit').addEventListener('click', function (event) {
+    event.preventDefault();
+    const userData = {
+        fullname: document.getElementById('registerFullname').value,
+        username: document.getElementById('registerUsername').value,
+        password: document.getElementById('registerPassword').value,
+        role: document.getElementById('registerRole').value
+    };
+
+    fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.msg === "User already exists") {
+            alert("User already exists. Please login.");
         } else {
-            childEmailField.classList.add('hidden');
+            loginUser(userData.username, userData.password); // Auto-login after successful registration
         }
-    });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+function loginUser(username, password) {
+    fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.access_token) {
+            localStorage.setItem('jwt_token', data.access_token);
+            // Redirect to the /home route
+            window.location.href = '/home';
+            alert("Logged in successfully!");
+
+            document.getElementById('loginPopup').classList.add('hidden');
+            document.getElementById('registerPopup').classList.add('hidden');
+
+        } else {
+            alert("Invalid credentials. Please try again.");
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+document.getElementById('loginSubmit').addEventListener('click', function (event) {
+    event.preventDefault();
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    loginUser(username, password);
+});
+
 </script>
 
 </body>

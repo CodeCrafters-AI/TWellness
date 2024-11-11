@@ -184,33 +184,33 @@
             <img src="https://via.placeholder.com/80" alt="User Avatar" class="avatar">
             <ul class="nav flex-column text-center w-100">
                 <li class="nav-item">
-                    <a class="nav-link " href="home.html">
+                    <a class="nav-link " href="home">
                         <i class="fas fa-home"></i> <!-- Exercising Icon -->
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="pwell.html">
+                    <a class="nav-link" href="pwell">
                         <i class="fas fa-running"></i> <!-- Exercising Icon -->
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link active" href="dwell.html">
+                    <a class="nav-link active" href="dwell">
                         <i class="fas fa-heartbeat"></i> <!-- Sexual Wellness Icon -->
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="mwell.html">
+                    <a class="nav-link" href="mwell">
                         <i class="fas fa-brain"></i> <!-- Mental Wellness Icon -->
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="swell.html">
+                    <a class="nav-link" href="swell">
                         <i class="fas fa-calendar-alt"></i>
                     </a>
                 </li>
             </ul>
-            <a class="nav-link logout" href="index.html">
+            <a class="nav-link logout" href="logout">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
         </nav>
@@ -246,17 +246,27 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="mailto:your-email@example.com" method="post" enctype="text/plain">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Message</label>
-                        <textarea class="form-control" id="message" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send Booking Request</button>
-                </form>
+                <form id="appointmentForm">
+    <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label for="date" class="form-label">Appointment Date</label>
+        <input type="date" class="form-control" id="date" name="date" required>
+    </div>
+    <div class="mb-3">
+        <label for="type" class="form-label">Appointment Type</label>
+        <input type="text" class="form-control" id="type" name="type" required>
+    </div>
+    <div class="mb-3">
+        <label for="message" class="form-label">Message</label>
+        <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+    </div>
+    <button type="button" onclick="submitAppointmentForm()" class="btn btn-primary">Send Booking Request</button>
+</form>
+
+
             </div>
         </div>
     </div>
@@ -265,24 +275,30 @@
 <!-- JavaScript for Chat Functionality -->
 <script>
     const chatContainer = document.getElementById('chatContainer');
-    const chatInput = document.getElementById('chatInput');
+const chatInput = document.getElementById('chatInput');
 
-    function sendMessage() {
-        const userMessage = chatInput.value.trim();
-        if (userMessage === '') return;
+// Function to send the user's message
+function sendMessage() {
+    const userMessage = chatInput.value.trim();
+    if (userMessage === '') return;
 
-        // Create User Message
-        const userMessageDiv = document.createElement('div');
-        userMessageDiv.classList.add('message', 'user-message');
-        userMessageDiv.textContent = userMessage;
-        chatContainer.appendChild(userMessageDiv);
+    // Create User Message
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.classList.add('message', 'user-message');
+    userMessageDiv.textContent = userMessage;
+    chatContainer.appendChild(userMessageDiv);
 
-        // Clear Input
-        chatInput.value = '';
+    // Clear Input
+    chatInput.value = '';
 
-        // Auto-scroll
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+    // Auto-scroll
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
+    // Send Nutrition Plan Request
+    if (1) { //(userMessage.toLowerCase().includes("nutrition") || userMessage.toLowerCase().includes("diet")) {
+        // Call Nutrition API with user input
+        fetchNutritionPlan(userMessage);
+    } else {
         // Simulate Bot Response
         setTimeout(() => {
             const botMessageDiv = document.createElement('div');
@@ -294,6 +310,95 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }, 1000);
     }
+}
+
+// Function to fetch Nutrition Plan from the server
+function fetchNutritionPlan(requirements) {
+    const data = { requirements };
+
+    // Call the API endpoint
+    fetch('/nutrition/plan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Display Bot Response with the generated nutrition plan
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.classList.add('message', 'bot-message');
+
+        if (data.plan) {
+            botMessageDiv.innerHTML = data.plan;  // Display the nutrition plan with HTML formatting
+        } else {
+            botMessageDiv.textContent = data.msg || "Sorry, there was an error generating the plan.";
+        }
+        chatContainer.appendChild(botMessageDiv);
+
+        // Auto-scroll
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    })
+    .catch(error => {
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.classList.add('message', 'bot-message');
+        botMessageDiv.textContent = "Sorry, something went wrong. Please try again later.";
+        chatContainer.appendChild(botMessageDiv);
+
+        // Auto-scroll
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+}
+
+function submitAppointmentForm() {
+    // Get form values
+    const email = document.getElementById('email').value;
+    const date = document.getElementById('date').value;
+    const type = document.getElementById('type').value;
+    const message = document.getElementById('message').value;
+
+    // Get JWT token from localStorage
+    const jwtToken = localStorage.getItem('jwt_token');
+
+    // Check if token exists
+    if (!jwtToken) {
+        alert("You must be logged in to book an appointment.");
+        return;
+    }
+
+    // Send form data with JWT token via Fetch API
+    fetch('/appointments/book', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`  // Attach JWT token in Authorization header
+        },
+        body: JSON.stringify({
+            email: email,
+            date: date,
+            type: type,
+            message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.msg) {
+            alert("Appointment booked successfully!");
+            // Optionally, redirect or clear form
+            window.location.href = '/home';  // Redirect to home after success
+        } else {
+            alert("Failed to book appointment: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error booking appointment:", error);
+        alert("An error occurred. Please try again.");
+    });
+}
+
+
+
 </script>
 
 <!-- Bootstrap JS -->
