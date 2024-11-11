@@ -184,33 +184,33 @@
     <img src="https://via.placeholder.com/80" alt="User Avatar" class="avatar">
     <ul class="nav flex-column text-center w-100">
         <li class="nav-item">
-            <a class="nav-link " href="home.html">
+            <a class="nav-link " href="home">
                 <i class="fas fa-home"></i> <!-- Exercising Icon -->
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="pwell.html">
+            <a class="nav-link" href="pwell">
                 <i class="fas fa-running"></i> <!-- Exercising Icon -->
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="dwell.html">
+            <a class="nav-link" href="dwell">
                 <i class="fas fa-heartbeat"></i> <!-- Sexual Wellness Icon -->
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" href="mwell.html">
+            <a class="nav-link active" href="mwell">
                 <i class="fas fa-brain"></i> <!-- Mental Wellness Icon -->
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="swell.html">
+            <a class="nav-link" href="swell">
                 <i class="fas fa-calendar-alt"></i>
             </a>
         </li>
     </ul>
-    <a class="nav-link logout" href="index.html">
+    <a class="nav-link logout" href="logout">
         <i class="fas fa-sign-out-alt"></i>
     </a>
 </nav>
@@ -245,17 +245,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="mailto:your-email@example.com" method="post" enctype="text/plain">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Message</label>
-                        <textarea class="form-control" id="message" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send Booking Request</button>
-                </form>
+                <form onsubmit="bookTherapySession(event)">
+    <div class="mb-3">
+        <label for="date" class="form-label">Session Date</label>
+        <input type="date" class="form-control" id="date" required>
+    </div>
+    <div class="mb-3">
+        <label for="message" class="form-label">Message</label>
+        <textarea class="form-control" id="message" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Send Therapy Request</button>
+</form>
             </div>
         </div>
     </div>
@@ -263,35 +263,79 @@
 <!-- JavaScript for Chat Functionality -->
 <script>
     const chatContainer = document.getElementById('chatContainer');
-    const chatInput = document.getElementById('chatInput');
+const chatInput = document.getElementById('chatInput');
 
-    function sendMessage() {
-        const userMessage = chatInput.value.trim();
-        if (userMessage === '') return;
+function sendMessage() {
+    const userMessage = chatInput.value.trim();
+    if (userMessage === '') return;
 
-        // Create User Message
-        const userMessageDiv = document.createElement('div');
-        userMessageDiv.classList.add('message', 'user-message');
-        userMessageDiv.textContent = userMessage;
-        chatContainer.appendChild(userMessageDiv);
+    // Display user's message in chat
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.classList.add('message', 'user-message');
+    userMessageDiv.textContent = userMessage;
+    chatContainer.appendChild(userMessageDiv);
 
-        // Clear Input
-        chatInput.value = '';
+    // Clear input field
+    chatInput.value = '';
+
+    // Auto-scroll
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Send message to the server for self-assessment
+    fetch('/mentalhealth/self-assessment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('jwt_token') // JWT from localStorage
+        },
+        body: JSON.stringify({ question: userMessage }) // Send the user's message as the question
+    })
+    .then(response => response.json())
+    .then(data => {
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.classList.add('message', 'bot-message');
+
+        // Display the feedback received from the server
+        if (data.feedback) {
+            botMessageDiv.innerHTML = data.feedback; // Display feedback with HTML formatting
+        } else {
+            botMessageDiv.textContent = data.msg || "Sorry, there was an error processing your assessment.";
+        }
+
+        chatContainer.appendChild(botMessageDiv);
 
         // Auto-scroll
         chatContainer.scrollTop = chatContainer.scrollHeight;
+    })
+    .catch(error => console.error('Error:', error));
+}
 
-        // Simulate Bot Response
-        setTimeout(() => {
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.classList.add('message', 'bot-message');
-            botMessageDiv.textContent = "I'm here to assist you!";
-            chatContainer.appendChild(botMessageDiv);
 
-            // Auto-scroll
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }, 1000);
-    }
+    function bookTherapySession(event) {
+    event.preventDefault();  // Prevent form from submitting traditionally
+
+    const date = document.getElementById('date').value;
+    const message = document.getElementById('message').value;
+
+    fetch('/mentalhealth/book-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('jwt_token')  // Get JWT from local storage
+        },
+        body: JSON.stringify({ date: date, message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.msg) {
+            window.location.href = '/home';  // Redirect to home after success
+            alert(data.msg);  // Display success message
+        } else {
+            alert(data.error || "Error booking the session.");  // Handle errors
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 </script>
 
 <!-- Bootstrap JS -->

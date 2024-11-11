@@ -143,9 +143,10 @@ def dashboard():
 @app.route('/symptoms/check', methods=['POST'])
 @jwt_required()  # Enable JWT authentication
 def check_symptoms():
-    symptoms = request.form.get('symptoms')
-    advice = gemini_ai_response(f"Assume you are a physician. This response is for a small college project. "
-                                f"Assume I have {symptoms}. What could it be? Answer as a professional.")
+    symptoms = request.json.get('symptoms')
+    advice = gemini_ai_response(f"what are the most common causes of  "
+                                f" {symptoms} in indians ")
+    print(symptoms)
     return jsonify({"advice": advice}), 200
 
 # Mental Health Support Endpoints
@@ -157,19 +158,29 @@ def mental_health_resources():
 @app.route('/mentalhealth/self-assessment', methods=['POST'])
 @jwt_required()  # Enable JWT authentication
 def mental_health_assessment():
-    responses = request.form
+    responses = request.json
     feedback = gemini_ai_response(f"Mental health self-assessment feedback {responses}")
     return jsonify({"feedback": feedback}), 200
 
+
 @app.route('/mentalhealth/book-session', methods=['POST'])
-@jwt_required()  # Enable JWT authentication
+@jwt_required()
 def book_mental_health_session():
     user_id = get_jwt_identity().get("user_id")
     date_str = request.json.get('date')
-    date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
-    new_session = Appointment(user_id=user_id, date=date, type="therapy")
+    message = request.json.get('message')
+
+    # Validate date format
+    try:
+        date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    # Create a new appointment with the message included
+    new_session = Appointment(user_id=user_id, date=date, type="therapy", message=message)
     db.session.add(new_session)
     db.session.commit()
+
     return jsonify({"msg": "Therapy session booked"}), 201
 
 # Reproductive Health Endpoints
@@ -198,7 +209,7 @@ def book_appointment():
         # Extract form data
         appointment_data = request.json
         appointment_date = datetime.datetime.strptime(appointment_data.get('date'), '%Y-%m-%d')
-        appointment_type = appointment_data.get('type')
+        appointment_type = "nutrition"
         message = appointment_data.get('message')
 
         # Create a new appointment
@@ -218,6 +229,38 @@ def book_appointment():
     except Exception as e:
         print("Error booking appointment:", e)
         return jsonify({"msg": "Failed to book appointment", "error": str(e)}), 500
+
+@app.route('/appointments/book/regular', methods=['POST'])
+@jwt_required()  # Enable JWT authentication
+def book_appointment_regular():
+    try:
+        # Get the user ID from the JWT token
+        user_id = get_jwt_identity().get("user_id")
+
+        # Extract form data
+        appointment_data = request.json
+        appointment_date = datetime.datetime.strptime(appointment_data.get('date'), '%Y-%m-%d')
+        appointment_type = "regular"
+        message = appointment_data.get('message')
+
+        # Create a new appointment
+        new_appointment = Appointment(
+            user_id=user_id,
+            date=appointment_date,
+            type=appointment_type,
+            message=message
+        )
+
+        # Add the appointment to the database
+        db.session.add(new_appointment)
+        db.session.commit()
+
+        return jsonify({"msg": "Appointment booked successfully","sucess": 1}), 201
+
+    except Exception as e:
+        print("Error booking appointment:", e)
+        return jsonify({"msg": "Failed to book appointment", "error": str(e)}), 500
+
 
 @app.route('/appointments/reminders', methods=['GET'])
 @jwt_required()  # Enable JWT authentication

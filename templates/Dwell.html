@@ -247,17 +247,10 @@
             </div>
             <div class="modal-body">
                 <form id="appointmentForm">
-    <div class="mb-3">
-        <label for="email" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="email" name="email" required>
-    </div>
+
     <div class="mb-3">
         <label for="date" class="form-label">Appointment Date</label>
         <input type="date" class="form-control" id="date" name="date" required>
-    </div>
-    <div class="mb-3">
-        <label for="type" class="form-label">Appointment Type</label>
-        <input type="text" class="form-control" id="type" name="type" required>
     </div>
     <div class="mb-3">
         <label for="message" class="form-label">Message</label>
@@ -352,10 +345,8 @@ function fetchNutritionPlan(requirements) {
 }
 
 function submitAppointmentForm() {
-    // Get form values
-    const email = document.getElementById('email').value;
+
     const date = document.getElementById('date').value;
-    const type = document.getElementById('type').value;
     const message = document.getElementById('message').value;
 
     // Get JWT token from localStorage
@@ -375,9 +366,7 @@ function submitAppointmentForm() {
             'Authorization': `Bearer ${jwtToken}`  // Attach JWT token in Authorization header
         },
         body: JSON.stringify({
-            email: email,
             date: date,
-            type: type,
             message: message
         })
     })

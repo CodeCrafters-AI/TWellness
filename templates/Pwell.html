@@ -200,17 +200,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="mwell.html">
+                    <a class="nav-link" href="mwell">
                         <i class="fas fa-brain"></i> <!-- Mental Wellness Icon -->
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="swell.html">
+                    <a class="nav-link" href="swell">
                         <i class="fas fa-calendar-alt"></i>
                     </a>
                 </li>
             </ul>
-            <a class="nav-link logout" href="index.html">
+            <a class="nav-link logout" href="logout">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
         </nav>
@@ -246,16 +246,16 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="mailto:your-email@example.com" method="post" enctype="text/plain">
+                <form>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Message</label>
-                        <textarea class="form-control" id="message" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send Booking Request</button>
+    <label for="date" class="form-label">Session Date</label>
+    <input type="date" class="form-control" id="date" required>
+</div>
+<div class="mb-3">
+    <label for="message" class="form-label">Message</label>
+    <textarea class="form-control" id="message" rows="3" required></textarea>
+</div>
+                    <button onclick="bookTherapySession()" class="btn btn-primary">Book Therapy Session</button>
                 </form>
             </div>
         </div>
@@ -267,7 +267,7 @@
     const chatContainer = document.getElementById('chatContainer');
     const chatInput = document.getElementById('chatInput');
 
-    function sendMessage() {
+    async function sendMessage() {
         const userMessage = chatInput.value.trim();
         if (userMessage === '') return;
 
@@ -283,17 +283,77 @@
         // Auto-scroll
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
-        // Simulate Bot Response
-        setTimeout(() => {
+        try {
+            // Fetch JWT token from local storage
+            const jwtToken = localStorage.getItem('jwt_token');
+            if (!jwtToken) {
+                alert("You need to log in to use the symptom checker.");
+                return;
+            }
+
+            // Send User Message to Backend
+            const response = await fetch('/symptoms/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`  // Attach JWT token
+                },
+                body: JSON.stringify({ symptoms: userMessage })
+            });
+
+            const data = await response.json();
+            // Check if a nutrition plan is provided
+            // Create Bot Message
             const botMessageDiv = document.createElement('div');
+        if (data.advice) {
+            botMessageDiv.innerHTML = data.advice ;  // Display the nutrition plan with HTML formatting
+        } else {
+            botMessageDiv.textContent = data.msg || "Sorry, there was an error generating the plan.";
+        }
+            const botMessage = data.advice || "Sorry, I couldn't process your symptoms.";
+
+
             botMessageDiv.classList.add('message', 'bot-message');
-            botMessageDiv.textContent = "I'm here to assist you!";
+
             chatContainer.appendChild(botMessageDiv);
 
-            // Auto-scroll
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }, 1000);
+        } catch (error) {
+            console.error('Error:', error);
+            const errorMessageDiv = document.createElement('div');
+            errorMessageDiv.classList.add('message', 'bot-message');
+            errorMessageDiv.textContent = "An error occurred. Please try again later.";
+            chatContainer.appendChild(errorMessageDiv);
+        }
+
+        // Auto-scroll
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
+
+    function bookTherapySession(event) {
+    event.preventDefault();  // Prevent form from submitting traditionally
+
+    const date = document.getElementById('date').value;
+    const message = document.getElementById('message').value;
+
+    fetch('/appointments/book/regular', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('jwt_token')  // Get JWT from local storage
+        },
+        body: JSON.stringify({ date: date, message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.msg) {
+            window.location.href = '/home';  // Redirect to home after success
+            alert(data.msg);  // Display success message
+        } else {
+            alert(data.error || "Error booking the session.");  // Handle errors
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 </script>
 
 <!-- Bootstrap JS -->
